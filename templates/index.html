@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOICE SHIELD // Real-Time AI Voice Authenticity & Deepfake Detector</title>
+  <!-- Google Fonts & Plotly.js -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-group">
+      <div class="shield-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="logo-title">VoiceShield</h1>
+        <p class="logo-sub">Real-Time Audio Authenticity & Deepfake Verification Engine</p>
+      </div>
+    </div>
+    <div class="system-status">
+      <div class="status-indicator active"></div>
+      <div>
+        <div class="status-title">SYSTEM ONLINE</div>
+        <div class="status-sub">Engine: IndicVoices + WaveFake Multi-Vocoder</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- Left Column: Audio Source, Waveform, and Mel Spectrogram -->
+    <aside class="sidebar">
+      <!-- 1. Voice Source Selection Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Audio Input & Demo Selection
+          </span>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="tab-buttons">
+          <button id="tabPresetBtn" class="tab-btn active" onclick="switchTab('preset')">Test Samples</button>
+          <button id="tabMicBtn" class="tab-btn" onclick="switchTab('mic')">Live Stream</button>
+          <button id="tabUploadBtn" class="tab-btn" onclick="switchTab('upload')">Upload File</button>
+        </div>
+
+        <!-- Preset Samples Tab -->
+        <div id="presetTab" class="tab-content active">
+          <div class="preset-group">
+            <label class="control-label">Authentic Speech (IndicVoices & Bonafide):</label>
+            <div class="sample-btn-group">
+              <button class="sample-btn safe" onclick="loadSample('real', 'real_indic_01_hindi.wav')">IndicVoice 01 (Hindi)</button>
+              <button class="sample-btn safe" onclick="loadSample('real', 'real_indic_02_hindi.wav')">IndicVoice 02 (Hindi)</button>
+              <button class="sample-btn safe" onclick="loadSample('real', 'real_01_human_speaker_988e2f9a.wav')">Human Speaker 01</button>
+              <button class="sample-btn safe" onclick="loadSample('real', 'real_02_human_speaker_6272b231.wav')">Human Speaker 02</button>
+            </div>
+
+            <label class="control-label" style="margin-top: 12px;">WaveFake Neural Vocoders:</label>
+            <div class="sample-btn-group">
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_wavefake_01_MelGAN.wav')">WF MelGAN</button>
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_wavefake_05_HiFi_GAN.wav')">WF HiFi-GAN</button>
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_wavefake_06_WaveGlow.wav')">WF WaveGlow</button>
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_wavefake_02_Parallel_WaveGAN.wav')">WF Parallel-GAN</button>
+            </div>
+
+            <label class="control-label" style="margin-top: 12px;">Edge-TTS Speech Synthesis:</label>
+            <div class="sample-btn-group">
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_01_indian_male_neural_ceo.wav')">EdgeTTS CEO (Ind)</button>
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_02_indian_female_neural_cfo.wav')">EdgeTTS CFO (Ind)</button>
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_03_indian_male_urgent_transfer.wav')">EdgeTTS Wire Transfer</button>
+              <button class="sample-btn danger" onclick="loadSample('fake', 'fake_11_hindi_male_bank_approval.wav')">EdgeTTS Bank Hindi</button>
+            </div>
+
+            <label class="control-label" style="margin-top: 12px;">ElevenLabs Voice Clones:</label>
+            <div class="sample-btn-group">
+              <button class="sample-btn danger" onclick="loadSample('Fake Voices 11 Labs', '11labs_20_Adam.wav')">ElevenLabs Adam</button>
+              <button class="sample-btn danger" onclick="loadSample('Fake Voices 11 Labs', '11labs_02_Sarah.wav')">ElevenLabs Sarah</button>
+              <button class="sample-btn danger" onclick="loadSample('Fake Voices 11 Labs', '11labs_04_Charlie.wav')">ElevenLabs Charlie</button>
+              <button class="sample-btn danger" onclick="loadSample('Fake Voices 11 Labs', '11labs_17_Brian.wav')">ElevenLabs Brian</button>
+              <button class="sample-btn danger" onclick="loadSample('Fake Voices 11 Labs', '11labs_15_Bella.wav')">ElevenLabs Bella</button>
+              <button class="sample-btn danger" onclick="loadSample('Fake Voices 11 Labs', '11labs_05_George.wav')">ElevenLabs George</button>
+            </div>
+          </div>
+
+          <!-- Built-in Audio Player for Judges -->
+          <div class="player-wrapper">
+            <label class="control-label">Audio Playback Monitor:</label>
+            <audio id="audioPlayer" controls class="audio-control"></audio>
+            <span id="playingFilename" class="playing-label">No audio loaded</span>
+          </div>
+        </div>
+
+        <!-- Live Mic Tab -->
+        <div id="micTab" class="tab-content">
+          <p class="tab-desc">Speak into your microphone for real-time live sliding-window detection.</p>
+          <div class="mic-controls">
+            <button id="micStreamBtn" class="btn btn-primary btn-block" onclick="toggleMicStream()">
+              <span id="micBtnIcon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-top;margin-right:5px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></span> <span id="micBtnText">Start Live Stream</span>
+            </button>
+            <div id="micLiveBadge" class="live-stream-badge" style="display:none;">
+              <span class="pulse-dot"></span> STREAMING LIVE TO DETECTOR
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Upload Tab -->
+        <div id="uploadTab" class="tab-content">
+          <label class="control-label">Upload custom audio (.wav / .mp3):</label>
+          <input type="file" id="audioFileInput" accept="audio/*" class="file-input">
+          <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="uploadCustomAudio()">Analyze Uploaded Audio</button>
+        </div>
+      </div>
+
+      <!-- 2. Audio Waveform Stream Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h2l3-7 4 14 4-11 3 6 2-2h2"/></svg>
+            Audio Waveform Stream
+          </span>
+          <span class="chart-badge">Time Domain</span>
+        </div>
+        <div id="waveformPlot" class="plot-box-sidebar"></div>
+      </div>
+
+      <!-- 3. 80-Band Mel Spectrogram Graph Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+            80-Band Mel Spectrogram
+          </span>
+          <span class="chart-badge">Frequency Domain</span>
+        </div>
+        <div id="melPlot" class="plot-box-sidebar"></div>
+      </div>
+    </aside>
+
+    <!-- Right Column: Voice Authenticity Decision, Score Gauge, Progression & Metrics -->
+    <main class="dashboard-main">
+      <!-- Voice Authenticity Decision Banner -->
+      <div class="threat-banner" id="threatBanner">
+        <div class="threat-gauge-container">
+          <div class="gauge-dial-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 116 116" width="112" height="112">
+              <circle class="gauge-bg" cx="58" cy="58" r="48" />
+              <circle class="gauge-bar" id="gaugeBarCircle" cx="58" cy="58" r="48" />
+            </svg>
+            <div class="gauge-content">
+              <div class="gauge-value" id="spoofPercent">--%</div>
+              <div class="gauge-risk-tag" id="gaugeRiskTag">LOW RISK</div>
+            </div>
+          </div>
+          <div class="gauge-caption">SPOOF RISK</div>
+        </div>
+        <div class="threat-details">
+          <div class="threat-badge" id="threatStatusBadge">STANDBY</div>
+          <h2 class="threat-title" id="summaryTitle">Select Audio Input to Begin Verification</h2>
+          <p class="threat-recommendation" id="summaryDesc">Select an audio sample from the test catalog or initiate real-time microphone streaming to analyze acoustic authenticity.</p>
+        </div>
+      </div>
+
+      <!-- Live Speech Transcription & Activity Bar (Active during live mic) -->
+      <div class="live-transcript-card" id="liveTranscriptCard" style="display: none;">
+        <div class="transcript-header">
+          <div class="transcript-title-group">
+            <span class="pulse-dot"></span>
+            <span class="transcript-label">LIVE STREAM TRANSCRIPTION</span>
+          </div>
+          <span class="vad-pill" id="vadBadge">MONITORING</span>
+        </div>
+        <div class="transcript-content">
+          <span id="liveTranscriptText" class="transcript-text">Listening for speech... Speak into your microphone.</span>
+        </div>
+      </div>
+
+      <!-- Key Diagnostic Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-tag">CLASSIFICATION</span>
+            <svg class="metric-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div class="metric-name">Verdict</div>
+          <div class="metric-value" id="verdictOutput">--</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="verdictBar" style="width: 0%;"></div>
+          </div>
+          <small class="metric-desc" id="verdictDesc">Confidence rating</small>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-tag">SPECTRAL CONTINUITY</span>
+            <svg class="metric-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="metric-name">Vocoder Artifact Index</div>
+          <div class="metric-value" id="artifactOutput">--%</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="artifactBar" style="width: 0%;"></div>
+          </div>
+          <small class="metric-desc">Phase alignment & harmonic consistency</small>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-tag">PROSODIC DYNAMICS</span>
+            <svg class="metric-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          </div>
+          <div class="metric-name">Cadence Naturalness</div>
+          <div class="metric-value" id="prosodyOutput">--%</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="prosodyBar" style="width: 0%;"></div>
+          </div>
+          <small class="metric-desc">Pitch variance, micro-jitter & pause distribution</small>
+        </div>
+      </div>
+
+      <!-- Dynamic Threat / Spoof Score Progression Timeline -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Dynamic Threat Progression (Sliding Window)
+          </span>
+          <span class="chart-badge">Rolling 2.5s Temporal Window</span>
+        </div>
+        <div id="timelinePlot" class="plot-box-main"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/audio_streamer.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
