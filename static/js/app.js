@@ -6,7 +6,6 @@ let audioStreamer = null;
 let liveRiskHistory = [];
 let liveTimeHistory = [];
 let streamStartTime = null;
-let speechRecognizer = null;
 
 // Tab Switching
 function switchTab(tabId) {
@@ -125,10 +124,6 @@ async function uploadCustomAudio() {
 
 // Render Results to UI
 function renderAnalysisResults(data) {
-  // Hide live transcript bar when viewing static file
-  const transcriptCard = document.getElementById('liveTranscriptCard');
-  if (transcriptCard) transcriptCard.style.display = 'none';
-
   // 1. Audio Player Setup
   const audioPlayer = document.getElementById('audioPlayer');
   const playingLabel = document.getElementById('playingFilename');
@@ -284,49 +279,6 @@ async function runFullBenchmark() {
   }
 }
 
-// Browser Web Speech API Recognition Initializer
-function initSpeechRecognition() {
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) {
-    console.log("Web Speech API not supported in this browser; falling back to acoustic VAD.");
-    return null;
-  }
-
-  const recognizer = new SpeechRec();
-  recognizer.continuous = true;
-  recognizer.interimResults = true;
-  recognizer.lang = 'en-US';
-
-  recognizer.onresult = (event) => {
-    let interim = '';
-    for (let i = event.resultIndex; i < event.results.length; ++i) {
-      interim += event.results[i][0].transcript;
-    }
-    const txt = interim.trim();
-    if (txt) {
-      const textEl = document.getElementById('liveTranscriptText');
-      if (textEl) textEl.innerText = txt;
-      const vadBadge = document.getElementById('vadBadge');
-      if (vadBadge) {
-        vadBadge.className = "vad-pill speaking";
-        vadBadge.innerText = "VOICE ACTIVE";
-      }
-    }
-  };
-
-  recognizer.onerror = (e) => {
-    console.log("Speech recognition notification:", e.error);
-  };
-
-  recognizer.onend = () => {
-    if (audioStreamer && audioStreamer.isStreaming) {
-      try { recognizer.start(); } catch(e) {}
-    }
-  };
-
-  return recognizer;
-}
-
 let liveSmoothedSpoof = 0.0;
 let liveSpoofHoldTimer = 0; // Timestamp (ms) until which SPOOF is locked across inter-word pauses
 let consecutiveBonafideSpeechFrames = 0;
@@ -337,8 +289,6 @@ async function toggleMicStream() {
   const btnIcon = document.getElementById('micBtnIcon');
   const btnText = document.getElementById('micBtnText');
   const badge = document.getElementById('micLiveBadge');
-  const transcriptCard = document.getElementById('liveTranscriptCard');
-  const transcriptText = document.getElementById('liveTranscriptText');
 
   if (!audioStreamer) {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -348,21 +298,11 @@ async function toggleMicStream() {
 
   if (audioStreamer.isStreaming) {
     audioStreamer.stop();
-    if (speechRecognizer) {
-      try { speechRecognizer.stop(); } catch(e) {}
-    }
     btn.classList.remove('btn-danger');
     btn.classList.add('btn-primary');
     btnIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-top;margin-right:5px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>`;
     btnText.innerText = "Start Live Stream";
     badge.style.display = "none";
-    if (transcriptCard) {
-      const vadBadge = document.getElementById('vadBadge');
-      if (vadBadge) {
-        vadBadge.className = "vad-pill";
-        vadBadge.innerText = "STREAM PAUSED";
-      }
-    }
   } else {
     liveRiskHistory = [0];
     liveTimeHistory = [0.0];
@@ -401,20 +341,6 @@ async function toggleMicStream() {
       btnIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:text-top;margin-right:5px;"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
       btnText.innerText = "Stop Live Stream";
       badge.style.display = "inline-flex";
-
-      // Show live speech transcript box
-      if (transcriptCard) {
-        transcriptCard.style.display = "flex";
-        transcriptText.innerText = "Listening for speech... Speak into your microphone.";
-      }
-
-      // Initialize Speech Recognition
-      if (!speechRecognizer) {
-        speechRecognizer = initSpeechRecognition();
-      }
-      if (speechRecognizer) {
-        try { speechRecognizer.start(); } catch(e) {}
-      }
     }
   }
 }
@@ -623,18 +549,6 @@ function onLiveMicTelemetry(data) {
     autosize: true
   };
   Plotly.react('timelinePlot', [traceTimeline], layoutTimeline);
-
-  // 8. Update Voice Activity Indicator Pill
-  const vadBadge = document.getElementById('vadBadge');
-  if (vadBadge) {
-    if (isSpeaking) {
-      vadBadge.className = "vad-pill speaking";
-      vadBadge.innerText = "VOICE DETECTED";
-    } else {
-      vadBadge.className = "vad-pill";
-      vadBadge.innerText = "MONITORING / IDLE";
-    }
-  }
 }
 
 function updateUIProcessingState(msg) {
